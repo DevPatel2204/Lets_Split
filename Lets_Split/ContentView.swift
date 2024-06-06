@@ -9,49 +9,58 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State private var totalCost = ""
-    @State private var people :Int = 2
-    @State private var tipIdex :Int = 4
-    let tippercentages = [5,10,15,20]
+    @State private var Amount = 0.0
+    @State private var numberofpeople = 2
+    @State private var tippercent = 10
     
-    func calculateTotal() -> Double {
-        let tip = Double(tippercentages[tipIdex])
-        let ordertotal = Double(totalCost) ?? 0
-        let finalamount = ((ordertotal/100 * tip)+ordertotal)
+    let tippercentages = [0,5,10,15,20]
+    
+    func totalperperson() -> Double{
+        let peopleCount = Double(numberofpeople + 2)
+        let tipselection = Double(tippercent)
         
-        return finalamount/Double(people)
+        let tipvalue = Amount/100 * tipselection
+        let grandtotal = Amount + tipvalue
+        let amountperperson = grandtotal / peopleCount
+        
+        return amountperperson
     }
-    
     var body: some View {
-        NavigationView{
-            Form {
-                Section(header:Text("Please enter the amount")){
-                    TextField("Amount",text: $totalCost).keyboardType(.decimalPad)
-                }
-                Section(header:Text("Please select a tip amount")){
-                    Picker("Tip percent",selection: $tipIdex){
-                        ForEach(0..<tippercentages.count){
-                            Text("\(tippercentages[$0])%")
-                        }
-                    }.pickerStyle(SegmentedPickerStyle())
-                }
-                
-                Section(header:Text("How many Peopple?")){
-                    Picker("How many People",selection: $people){
-                        ForEach(0 ..< 25){
-                            Text("\($0) people")
+        ZStack {
+            NavigationView{
+                Form{
+                    Section{
+                        TextField("Amount",value: $Amount, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
+                            .keyboardType(.decimalPad)
+                        Picker("Number of People",selection: $numberofpeople){
+                            ForEach(2 ..< 100) {
+                                Text("\($0) people")
+                            }
                         }
                     }
+                    
+                    Section{
+                        Picker("Tip percent",selection: $tippercent){
+                            ForEach(tippercentages , id: \.self){
+                                Text($0,format: .percent)
+                            }
+                        }.pickerStyle(.segmented)
+                    }
+                    Section(header:Text("Total per person")){
+                    Text(totalperperson(), format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
+                    }
                 }
-                
-                Section(header:Text("Total per person")){
-                    Text("RS\(calculateTotal(),specifier: "$2f")")
-                }
-            }.navigationTitle("Let's Split It Up")
+                .navigationTitle("Let's Split")
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationViewStyle(.stack)
+            }
+            
         }
-
     }
 }
+
+    
+
 
 #Preview {
     ContentView()
